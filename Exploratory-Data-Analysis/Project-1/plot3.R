@@ -3,7 +3,7 @@
  data0 <- subset(data, data$Date == "1/2/2007" | data$Date == "2/2/2007")
  data0$datetime <= strptime(paste(data0[,1],data0[,2]), "%d/%m/%Y %H:%M:%S")
  #plot the figure and save as PNG
- plot(data0[,10], data0[,7], type = "l", xlab = "", ylab = "Global Active Power (kilowatts)")
+ plot(data0[,10], data0[,7], type = "l", xlab = "", ylab = "Energy sub metering")
  lines(data0[,10], data0[,8], col='Red')
  lines(data0[,10], data0[,9], col='Blue')
  legend("topright", col = c("black", "red", "blue"), lwd = 1, cex = 0.5, legend = c("Sub_metering_1", "Sub_metering_2", "Sub_metering_3"))
