@@ -1,0 +1,71 @@
+### Title
+#### Predicting exercise manners
+
+### Summary
+Our prediction model is based on the random forest method. Our test on the validation set shows an overall accuracy of 99.2%, and accuracy for all five classes are above 98.5%. 
+
+### Data cleaning and splitting
+From the raw data, we removed all columns tha contains null data. We further removed columns that are almost constant, and columns that are highly correlated with other columns. The first seven columns also were removed since they are for identification only:
+
+1. `X`: row index
+2. `user_name`: username
+3. `raw_timestamp_part_1`: timestamp
+4. `raw_timestamp_part_2`: timestamp
+5. `cvtd_timestamp`: date and time
+6. `new_window`: window status
+7. `num_window`: window id
+
+The following codes are applied for data cleaning.
+
+```{r, include=FALSE}
+library(caret)
+raw <- read.csv("pml-training.csv")
+testing <- read.csv("pml-testing.csv")
+# Remove NA columns
+pre <- raw[,colSums(is.na(raw)) == 0]
+# Remove columns that are almost constant
+pre <- pre[,!(nearZeroVar(pre, saveMetrics = TRUE)[,4])]
+# Remove columnus that are not related with exercises
+pre <- pre[,8:ncol(pre)]
+# Remove correlated columns
+M <- abs(cor(pre[,1:(ncol(pre)-1)]))
+diag(M) <- 0
+index <- which(M>0.8,arr.ind=T)
+pre <- pre[, -apply(index,1,min)]
+```
+
+After cleaning, our data set has 40 variables (including the response variable "classe"). The clean data was then splitted into training set and validation set, with a probablity of 3:1.
+```{r, include=FALSE}
+set.seed(1996)
+v <- createDataPartition(factor(pre$classe), p=0.25, list=FALSE)
+validation <- pre[v,]
+training <- pre[-v,]
+```
+
+### Exploratory plotting
+Based on a series of linear regression (data not shown), we chose "magnet_belt_y" and "pitch_forearm" to plot the observations as below.
+```{r}
+library(ggplot2)
+qplot(training$magnet_belt_y, training$pitch_forearm, color = training$classe)
+```
+
+### Model building
+We built several models based on single decision tree, linear discriminant analysis, naive Bayes, random forest, and generalized boosted regression. The first three methods lead to models with low accuracy (< 80%). We built two models with the last two methods as below, with single 5-fold cross validation option.
+```{r, include=FALSE}
+model1 <- train(factor(classe)~., method="rf", trControl=trainControl(method="cv", number=5), data=training)
+model2 <- train(factor(classe)~., method="gbm", trControl=trainControl(method="cv", number=5), data=training)
+```
+
+### Model validation
+We test our two models with our validation set, as below.
+```{r}
+confusionMatrix(factor(validation$classe), predict(model1, validation)) #rf model
+confusionMatrix(factor(validation$classe), predict(model2, validation)) #gbm model
+```
+Therefore, we chose our final model based on the random forest method, which shows a satisfactory accuracy (> 99%).
+
+### Prediction
+Finally, with our random forest model, we made the following prediction for the testing set.
+```{r}
+predict(model1, testing)
+```
