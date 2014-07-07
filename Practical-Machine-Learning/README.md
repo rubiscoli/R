@@ -1,0 +1,1 @@
+Please note that this project was created before the course session started. I was on a vacation so I missed the project submission deadline for the last session. Therefore I was able to prepare my project before this session started. However, it is my original work so I think I do not break any rules. Thank you!
